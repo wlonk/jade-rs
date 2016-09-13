@@ -1,0 +1,63 @@
+/**
+ * Using peg.js syntax, not oak or other Rust peg syntax.
+ *
+ */
+document
+  = doctype tag*
+
+ws
+  = " "+
+
+nl
+  = "\n"
+
+doctype
+  = "doctype\n" {
+    return "doctype";
+  }
+
+tag
+  = indent:indent_level tag:tag_def text:(ws text)? nl {
+    return {
+      indent,
+      tag,
+      text: text ? text[1] : null
+    };
+  }
+
+indent_level
+  = level:" "* {
+    return level.length;
+  }
+
+tag_def
+  = name:tag_name attrs:(class_or_id)* {
+    return {
+      name,
+      attrs
+    };
+  }
+
+tag_name
+  = name:[a-z0-9:-]+ {
+    return name.join('');
+  }
+
+text
+  = text:[A-Za-z0-9!]+ {
+    return text.join('');
+  }
+
+class_or_id
+  = "." val:[A-Za-z0-9-]+ {
+    return {
+      name: 'class',
+      value: val.join('')
+    };
+  }
+  / "#" val:[A-Za-z0-9-]+ {
+    return {
+      name: 'id',
+      value: val.join('')
+    };
+  }
